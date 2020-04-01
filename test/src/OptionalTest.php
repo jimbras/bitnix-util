@@ -45,11 +45,11 @@ class OptionalTest extends TestCase {
     }
 
     public function testOfNullableCreatesObjectWithPossibleNullValue() {
-        $opt = Optional::ofNullable(null);
+        $opt = Optional::safe(null);
         $this->assertFalse($opt->valid());
         $this->assertTrue($opt->invalid());
 
-        $opt = Optional::ofNullable('foo');
+        $opt = Optional::safe('foo');
         $this->assertTrue($opt->valid());
         $this->assertFalse($opt->invalid());
         $this->assertEquals('foo', $opt->value());
@@ -57,21 +57,21 @@ class OptionalTest extends TestCase {
 
     public function testCallingValueOnInvalidOptionalThrowsException() {
         $this->expectException(UnexpectedValueException::CLASS);
-        Optional::ofNullable(null)->value();
+        Optional::safe(null)->value();
     }
 
     public function testOrValue() {
-        $opt = Optional::ofNullable(null);
+        $opt = Optional::safe(null);
         $this->assertEquals('foo', $opt->orValue('foo'));
     }
 
     public function testOrCall() {
-        $opt = Optional::ofNullable(null);
+        $opt = Optional::safe(null);
         $this->assertEquals('foo', $opt->orCall(fn() => 'foo'));
     }
 
     public function testOr() {
-        $opt = Optional::ofNullable(null);
+        $opt = Optional::safe(null);
         $other = Optional::of('foo');
         $this->assertSame($other, $opt->or(fn() => $other));
     }
@@ -82,7 +82,7 @@ class OptionalTest extends TestCase {
 
     public function testOrFailThrowsException() {
         $this->expectException(\RuntimeException::CLASS);
-        Optional::ofNullable(null)->orFail(function() { return new \RuntimeException(); });
+        Optional::safe(null)->orFail(function() { return new \RuntimeException(); });
     }
 
     public function testCall() {
@@ -90,19 +90,19 @@ class OptionalTest extends TestCase {
         $counter1 = function() use (&$called) { ++$called; };
         $counter2 = function() use (&$called) { --$called; };
 
-        Optional::ofNullable('foo')->call($counter1);
+        Optional::safe('foo')->call($counter1);
         $this->assertEquals(1, $called);
 
-        Optional::ofNullable(null)->call($counter1, $counter2);
+        Optional::safe(null)->call($counter1, $counter2);
         $this->assertEquals(0, $called);
     }
 
     public function testFilter() {
-        $opt = Optional::ofNullable(null);
+        $opt = Optional::safe(null);
         $this->assertSame($opt, $opt->filter(fn() => true));
         $this->assertSame($opt, $opt->filter(fn() => false));
 
-        $opt = Optional::ofNullable('foo');
+        $opt = Optional::safe('foo');
         $this->assertSame($opt, $opt->filter(fn() => true));
         $this->assertSame(Optional::empty(), $opt->filter(fn() => false));
     }
@@ -114,7 +114,7 @@ class OptionalTest extends TestCase {
         );
         $this->assertSame(
             Optional::empty(),
-            Optional::ofNullable(null)->map(fn() => 'baz')
+            Optional::safe(null)->map(fn() => 'baz')
         );
     }
 
@@ -123,12 +123,23 @@ class OptionalTest extends TestCase {
         $this->assertTrue(Optional::of('foo')->equals(Optional::of('foo')));
     }
 
+    public function testStream() {
+        $stream = Optional::safe(null)->stream();
+        $this->assertSame(Stream::empty(), $stream);
+
+        $items = Optional::of(1)->stream()->items();
+        $this->assertEquals([1], $items);
+
+        $items = Optional::of([1, 2, 3])->stream()->items();
+        $this->assertEquals([1, 2, 3], $items);
+    }
+
     public function testToString() {
         $this->assertStringContainsString(
             'value=' . self::CLASS, (string) Optional::of($this)
         );
         $this->assertStringContainsString(
-            'value=null', (string) Optional::ofNullable(null)
+            'value=null', (string) Optional::safe(null)
         );
         $this->assertStringContainsString(
             'value=array', (string) Optional::of([])

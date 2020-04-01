@@ -102,6 +102,20 @@ final class Optional {
     }
 
     /**
+     * @return Stream
+     */
+    public function stream() : Stream {
+
+        if (null === $this->value) {
+            return Stream::empty();
+        }
+
+        return Stream::of(
+            \is_iterable($this->value) ? $this->value : [$this->value]
+        );
+    }
+
+    /**
      * @param callable $handler
      * @param null|callable $empty
      */
@@ -129,7 +143,7 @@ final class Optional {
      * @return static
      */
     public function map(callable $mapper) : self {
-        return null === $this->value ? $this : self::ofNullable($mapper($this->value));
+        return null === $this->value ? $this : self::safe($mapper($this->value));
     }
 
     /**
@@ -179,8 +193,8 @@ final class Optional {
      * @param mixed $value
      * @return self
      */
-    public static function ofNullable($value) : self {
-        return $value === null ? self::empty() : self::of($value);
+    public static function safe($value) : self {
+        return $value === null ? self::empty() : new self($value);
     }
 
 }
