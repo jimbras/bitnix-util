@@ -44,7 +44,7 @@ class OptionalTest extends TestCase {
         Optional::of(null);
     }
 
-    public function testOfNullableCreatesObjectWithPossibleNullValue() {
+    public function testSafeCreatesObjectWithPossibleNullValue() {
         $opt = Optional::safe(null);
         $this->assertFalse($opt->valid());
         $this->assertTrue($opt->invalid());
