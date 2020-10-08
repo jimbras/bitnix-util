@@ -71,7 +71,7 @@ final class Optional {
      * @return mixed
      */
     public function orValue($other) {
-        return $this->value ?? $other;
+        return null === $this->value ? $other : $this->value;
     }
 
     /**
@@ -79,7 +79,7 @@ final class Optional {
      * @return mixed
      */
     public function orCall(callable $provider) {
-        return $this->value ?? $provider();
+        return null === $this->value ? $provider() : $this->value;
     }
 
     /**
